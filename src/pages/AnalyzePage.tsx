@@ -80,6 +80,13 @@ export function AnalyzePage() {
       // 1. Extract PDF text client-side
       const resumeText = await extractTextFromPDF(resumeFile)
 
+      // Guard: scanned / image-based PDFs produce empty text
+      if (!resumeText.trim()) {
+        throw new Error(
+          'Could not extract text from this PDF. It may be a scanned image. Please use a text-based PDF or copy-paste your resume into the job description field.'
+        )
+      }
+
       // 2. Upload PDF to Supabase Storage
       const filePath = `resumes/${user.id}/${Date.now()}_${resumeFile.name}`
       const { error: uploadError } = await supabase.storage
@@ -303,7 +310,9 @@ export function AnalyzePage() {
               />
               <div className="flex justify-between mt-1.5">
                 <p className="text-white/25 text-xs">Min. 100 characters recommended</p>
-                <p className="text-white/25 text-xs">{jdText.length} chars</p>
+                <p className={`text-xs ${jdText.length > 2500 ? 'text-yellow-400' : 'text-white/25'}`}>
+                  {jdText.length}/2500 chars{jdText.length > 2500 ? ' (extra text will be trimmed)' : ''}
+                </p>
               </div>
             </motion.div>
           </div>

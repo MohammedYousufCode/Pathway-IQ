@@ -10,6 +10,7 @@ import ReactFlow, {
   useEdgesState,
   BackgroundVariant,
   NodeProps,
+  ReactFlowProvider,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { motion } from 'framer-motion'
@@ -27,7 +28,7 @@ import type { Database, LearningNode } from '@/lib/supabase'
 
 type Analysis = Database['public']['Tables']['analyses']['Row']
 
-// Custom node component
+// ── Custom node — defined OUTSIDE component so the reference is stable ──
 function RoadmapNode({ data }: NodeProps) {
   return (
     <div
@@ -53,19 +54,20 @@ function RoadmapNode({ data }: NodeProps) {
   )
 }
 
+// Must be stable (module-level constant, not inside a component)
 const nodeTypes = { roadmapNode: RoadmapNode }
 
 function buildFlow(pathway: LearningNode[], completedNodes: Set<string>) {
   const cols = 3
-  const xGap = 240
-  const yGap = 130
+  const xGap = 260
+  const yGap = 140
 
   const nodes: Node[] = pathway.map((item, i) => ({
     id: item.id,
     type: 'roadmapNode',
     position: {
-      x: (i % cols) * xGap + (Math.floor(i / cols) % 2 === 1 ? xGap / 2 : 0),
-      y: Math.floor(i / cols) * yGap,
+      x: (i % cols) * xGap + (Math.floor(i / cols) % 2 === 1 ? xGap / 2 : 0) + 40,
+      y: Math.floor(i / cols) * yGap + 40,
     },
     data: {
       label: item.topic,
@@ -89,7 +91,8 @@ function buildFlow(pathway: LearningNode[], completedNodes: Set<string>) {
   return { nodes, edges }
 }
 
-export function RoadmapPage() {
+// ── Inner component that uses ReactFlow hooks (must be inside ReactFlowProvider) ──
+function RoadmapCanvas() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuthStore()
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
@@ -125,13 +128,12 @@ export function RoadmapPage() {
     load()
   }, [id, user])
 
-  // Build flow whenever data changes
+  // Build flow whenever analysis or completedNodes changes
   useEffect(() => {
     if (!analysis?.learning_pathway) return
-    const { nodes: n, edges: e } = buildFlow(
-      analysis.learning_pathway as LearningNode[],
-      completedNodes
-    )
+    const pathway = analysis.learning_pathway as LearningNode[]
+    if (!pathway.length) return
+    const { nodes: n, edges: e } = buildFlow(pathway, completedNodes)
     setNodes(n)
     setEdges(e)
   }, [analysis, completedNodes, setNodes, setEdges])
@@ -151,6 +153,16 @@ export function RoadmapPage() {
     if (completed) updated.add(nodeId)
     else updated.delete(nodeId)
     setCompletedNodes(updated)
+
+    // Rebuild graph immediately so color updates without re-fetching
+    if (analysis?.learning_pathway) {
+      const { nodes: n, edges: e } = buildFlow(
+        analysis.learning_pathway as LearningNode[],
+        updated
+      )
+      setNodes(n)
+      setEdges(e)
+    }
 
     try {
       await supabase.from('roadmap_progress').upsert(
@@ -209,6 +221,10 @@ export function RoadmapPage() {
           <div className="flex-1 flex items-center justify-center">
             <div className="w-10 h-10 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : !pathway.length ? (
+          <div className="flex-1 flex items-center justify-center text-white/40">
+            <p>No learning pathway found for this analysis.</p>
+          </div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
@@ -227,6 +243,7 @@ export function RoadmapPage() {
               fitViewOptions={{ padding: 0.3 }}
               minZoom={0.3}
               maxZoom={2}
+              proOptions={{ hideAttribution: true }}
             >
               <Background
                 variant={BackgroundVariant.Dots}
@@ -254,5 +271,14 @@ export function RoadmapPage() {
         />
       </div>
     </PageWrapper>
+  )
+}
+
+// ── Exported page: wraps the canvas in ReactFlowProvider ──
+export function RoadmapPage() {
+  return (
+    <ReactFlowProvider>
+      <RoadmapCanvas />
+    </ReactFlowProvider>
   )
 }
