@@ -18,14 +18,6 @@ AI-powered career intelligence that learns you, not the other way around. Pathwa
 
 ---
 
-## 📸 Screenshots
-
-| Landing Page | Analysis Results | Learning Roadmap |
-|---|---|---|
-| Hero with CTA, features, testimonials | Readiness score + skill radar chart | Interactive ReactFlow roadmap nodes |
-
----
-
 ## ✨ Features
 
 - **🤖 AI Skill Extraction** — Automatically parses resume PDFs client-side and extracts every technical and soft skill
@@ -437,22 +429,6 @@ To use your own domain:
 1. Add your domain in the [Resend dashboard](https://resend.com)
 2. Verify DNS records
 3. Update the `from` field in `supabase/functions/send-result-email/index.ts`
-
----
-
-## 🛣 Roadmap
-
-| Quarter | Feature |
-|---------|---------|
-| **Q2 2026** | LinkedIn resume import |
-| **Q2 2026** | Multi-format support (.docx, .txt) |
-| **Q2 2026** | AI cover letter generator |
-| **Q3 2026** | Interview prep module |
-| **Q3 2026** | Mentor matching |
-| **Q3 2026** | Enterprise / team plan |
-| **Q4 2026** | Mobile app (iOS & Android) |
-| **Q4 2026** | Learning platform integrations (Coursera, Udemy) |
-| **Q4 2026** | Public REST API |
 
 ---
 
