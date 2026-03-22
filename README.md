@@ -31,54 +31,6 @@ AI-powered career intelligence that learns you, not the other way around. Pathwa
 
 ---
 
-## ⚠️ Known Issue — Roadmap Not Visible in Non-Safari Browsers
-
-> **Status: Identified | Priority: High | Fix: In Progress**
-
-The interactive learning roadmap renders correctly in **Safari** but may not display in **Chrome, Firefox, or Edge**.
-
-**Root Cause:** ReactFlow (used for the roadmap canvas) initializes its internal dimensions using the container's computed width and height. In non-Safari browsers, the container may report zero dimensions on first render — causing ReactFlow to silently skip rendering all nodes and edges. Safari handles this differently due to its layout engine behavior.
-
-**Symptoms:**
-- Roadmap page loads with no nodes visible
-- No JavaScript errors in console
-- Page title and progress bar render correctly but canvas is empty
-
-**Workarounds (until fix is deployed):**
-
-```
-Option 1 — Use Safari (fully working)
-Option 2 — Hard refresh the page (Cmd/Ctrl + Shift + R)
-Option 3 — Resize the browser window slightly after load
-```
-
-**Permanent Fix (coming soon):**
-
-```tsx
-// src/pages/RoadmapPage.tsx
-// Add ReactFlow fitView + dimensions initialization delay
-
-const [rfReady, setRfReady] = useState(false)
-
-useEffect(() => {
-  // Force re-render after container mounts with correct dimensions
-  const timer = setTimeout(() => setRfReady(true), 100)
-  return () => clearTimeout(timer)
-}, [])
-
-// In JSX — only render ReactFlow when container is ready
-{rfReady && (
-  <ReactFlow
-    nodes={nodes}
-    edges={edges}
-    fitView
-    fitViewOptions={{ padding: 0.3 }}
-  />
-)}
-```
-
----
-
 ## 🛠 Tech Stack
 
 | Layer | Technology | Purpose |
