@@ -118,7 +118,7 @@ function buildEmailHtml(params: {
       </div>
 
       <div class="footer">
-        <p>© ${new Date().getFullYear()} PathwayIQ · AI-powered onboarding that learns you, not the other way around.</p>
+        <p>©️ ${new Date().getFullYear()} PathwayIQ · AI-powered onboarding that learns you, not the other way around.</p>
         <p style="margin-top:6px;">You received this email because you completed an analysis on PathwayIQ.</p>
       </div>
     </div>
